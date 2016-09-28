@@ -14,7 +14,14 @@ as on the target board, but using the computers sound card for audio I/O.
 
 * libopencm3 <http://libopencm3.org/> - included as a git submodule.
 * Jack - the audio streaming framework is used on the host.
+install jack and libjack-dev
+* sudo apt-get install libusb-1.0-0-dev
 * dfu-util - for programming the board with DFU over USB
+download sources from http://dfu-util.sourceforge.net/releases/ tested 0.9
+untar and cd into the folder
+./configure
+make
+sudo make install
 * OpenOCD 0.9.0 or later - for programming the board with an ST-Link v2
 
 KISS FFT is used to provide discrete Fourier transforms. It is included in the

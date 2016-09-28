@@ -12,7 +12,7 @@ clean:
 flash: flash-fxbox
 
 .PHONY: dfu
-dfu: dfu-fxbox
+dfu: dfu-feedthrough
 
 flash-%:
 	$(MAKE) -f target.mk $@

@@ -25,7 +25,7 @@ $(BUILDDIR)/fxbox.elf: $(COMMON_OBJS) $(BUILDDIR)/fxbox.o \
 	$(BUILDDIR)/dsp/biquad.o
 $(BUILDDIR)/fxbox2.elf: $(COMMON_OBJS) $(BUILDDIR)/fxbox2.o \
 	$(BUILDDIR)/dsp/vibrato.o $(BUILDDIR)/dsp/biquad.o \
-	$(BUILDDIR)/dsp/delay.o
+	$(BUILDDIR)/dsp/delay.o $(BUILDDIR)/dsp/1storder.o
 $(BUILDDIR)/guitar.elf: $(COMMON_OBJS) $(BUILDDIR)/guitar.o \
 	$(BUILDDIR)/dsp/vibrato.o $(BUILDDIR)/dsp/delay.o
 $(BUILDDIR)/fft_tests.elf: $(COMMON_OBJS) $(BUILDDIR)/tests/fft_tests.o
