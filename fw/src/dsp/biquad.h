@@ -38,15 +38,6 @@ typedef struct {
 #define BesselHP       11
 
 typedef struct {
-  float threshold;  // -90/+6 [dB]
-  float ratio;      // 1 - 100
-  float attack;     // 1 - 500 [ms]
-  float hold;       // 1 - attack [ms]
-  float decay;      // 2000 [ms]
-  float postgain;   // -30/+24 [dB]
-} compressor_t;
-
-typedef struct {
   float Q;          // Parametric, Peaking, range 0-16
   float S;          // Slope (Shelving), range 0-2
   float bandwidth;   // Bandwidth in octaves, range 0-11 

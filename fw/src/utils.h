@@ -6,9 +6,13 @@
 #endif
 
 /**
- * Convert a frequency to radians for making filters
+ * Convert a frequency to radians for making filters (normalized in respect to the sampling frequency)
  */
 #define HZ2OMEGA(f) ((f) * (3.1416f / NYQUIST))
+
+// dB - linear amplitude convesions
+#define DB_TO_LINEAR(x) (pow(10.0, (x) / 20.0))
+#define LINEAR_TO_DB(x) (20.0 * log10(x))
 
 /**
  * Convert a 16-bit unsigned to a float value in the provided range, linearly.

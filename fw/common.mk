@@ -16,7 +16,8 @@ $(BUILDDIR)/%.o: src/%.c Makefile $(LIBOPENCM3)
 
 COMMONFLAGS += -Isrc/kiss_fft130
 
-$(BUILDDIR)/feedthrough.elf: $(COMMON_OBJS) $(BUILDDIR)/examples/feedthrough.o
+$(BUILDDIR)/feedthrough.elf: $(COMMON_OBJS) $(BUILDDIR)/examples/feedthrough.o \
+	$(BUILDDIR)/dsp/1storder.o $(BUILDDIR)/dsp/dynamic.o
 $(BUILDDIR)/sine.elf: $(COMMON_OBJS) $(BUILDDIR)/examples/sine.o
 $(BUILDDIR)/delay.elf: $(COMMON_OBJS) $(BUILDDIR)/examples/delay.o
 $(BUILDDIR)/fxbox.elf: $(COMMON_OBJS) $(BUILDDIR)/fxbox.o \
@@ -25,7 +26,7 @@ $(BUILDDIR)/fxbox.elf: $(COMMON_OBJS) $(BUILDDIR)/fxbox.o \
 	$(BUILDDIR)/dsp/biquad.o
 $(BUILDDIR)/fxbox2.elf: $(COMMON_OBJS) $(BUILDDIR)/fxbox2.o \
 	$(BUILDDIR)/dsp/vibrato.o $(BUILDDIR)/dsp/biquad.o \
-	$(BUILDDIR)/dsp/delay.o $(BUILDDIR)/dsp/1storder.o
+	$(BUILDDIR)/dsp/delay.o
 $(BUILDDIR)/guitar.elf: $(COMMON_OBJS) $(BUILDDIR)/guitar.o \
 	$(BUILDDIR)/dsp/vibrato.o $(BUILDDIR)/dsp/delay.o
 $(BUILDDIR)/fft_tests.elf: $(COMMON_OBJS) $(BUILDDIR)/tests/fft_tests.o
