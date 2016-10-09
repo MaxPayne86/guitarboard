@@ -19,6 +19,7 @@
 #include "usb.h"
 
 #define ADC_PINS KNOB_COUNT
+#define USERTICK CODEC_SAMPLERATE/4u
 
 // STM32F405RG pin map
 static const struct {
@@ -50,6 +51,7 @@ static volatile uint16_t adcSamples[ADC_PINS]; // 12-bit value
 static volatile uint16_t adcValues[ADC_PINS]; // 16-bit value
 
 static void(*idleCallback)(void);
+static void(*userCallback)(void);
 
 static void adcInit(const KnobConfig* knobConfig)
 {
@@ -157,6 +159,11 @@ void platformRegisterIdleCallback(void(*cb)(void))
     idleCallback = cb;
 }
 
+void platformRegisterUserCallback(void(*cb)(void))
+{
+		userCallback = cb;
+}
+
 void platformMainloop(void)
 {
     setLed(LED_GREEN, false);
@@ -164,11 +171,20 @@ void platformMainloop(void)
     setLed(LED_BLUE, false);
 
     unsigned lastprint = 0;
+		unsigned lastuser = 0;
 
     while (true) {
         __WFI();
 
-        if (samplecounter >= lastprint + CODEC_SAMPLERATE) {
+				if (samplecounter >= lastuser + USERTICK) // Every 250ms
+				{
+						if (userCallback) {
+								userCallback();
+						}
+						lastuser = samplecounter;
+				}
+
+        if (samplecounter >= lastprint + CODEC_SAMPLERATE) { // Every second
             printf("%u samples, peak %5d %5d. ADC %x %x %x %x %x %x\n",
                     samplecounter, peakIn, peakOut,
                     adcValues[0], adcValues[1],
