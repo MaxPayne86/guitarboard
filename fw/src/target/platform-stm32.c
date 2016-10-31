@@ -109,9 +109,12 @@ static void ioInit(const KnobConfig* knobConfig)
 
 void platformFrameFinishedCB(void)
 {
+		static uint32_t sum[ADC_PINS];
+
     // Lowpass filter analog inputs
     for (unsigned i = 0; i < ADC_PINS; i++) {
-        adcValues[i] = adcValues[i] - (adcValues[i] >> 4) + adcSamples[i];
+				sum[i] = ((((64u)-1) * sum[i])+((uint32_t)adcSamples[i]*(64u)))/(64u);
+				adcValues[i] = (uint16_t)(sum[i]/64u); // 
     }
 }
 
@@ -164,6 +167,14 @@ void platformRegisterUserCallback(void(*cb)(void))
 		userCallback = cb;
 }
 
+void clearAndHome(void)
+{
+  putchar(0x1b); // ESC
+  printf("[2J"); // clear screen
+  putchar(0x1b); // ESC
+  printf("[H"); // cursor to home
+}
+
 void platformMainloop(void)
 {
     setLed(LED_GREEN, false);
@@ -185,7 +196,8 @@ void platformMainloop(void)
 				}
 
         if (samplecounter >= lastprint + CODEC_SAMPLERATE) { // Every second
-            printf("%u samples, peak %5d %5d. ADC %x %x %x %x %x %x\n",
+						clearAndHome();
+            printf("%u samples, peak %5d %5d. ADC %4d %4d %4d %4d %4d %4d\n\r",
                     samplecounter, peakIn, peakOut,
                     adcValues[0], adcValues[1],
                     adcValues[2], adcValues[3],
