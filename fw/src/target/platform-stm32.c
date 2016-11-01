@@ -114,7 +114,7 @@ void platformFrameFinishedCB(void)
     // Lowpass filter analog inputs
     for (unsigned i = 0; i < ADC_PINS; i++) {
 				sum[i] = ((((64u)-1) * sum[i])+((uint32_t)adcSamples[i]*(64u)))/(64u);
-				adcValues[i] = (uint16_t)(sum[i]/64u); // 
+				adcValues[i] = (uint16_t)(sum[i]/64u);
     }
 }
 
