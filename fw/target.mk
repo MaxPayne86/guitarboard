@@ -57,7 +57,7 @@ $(LIBOPENCM3):
 flash: flash-fxbox
 
 .PHONY: dfu
-dfu: dfu-feedthrough
+dfu: dfu-compressor
 
 $(BUILDDIR)/%.bin-dfu: $(BUILDDIR)/%.bin
 	cp $< $@

@@ -131,6 +131,7 @@ static void idleCallback()
     // Switch the active effect if the selector knob has been turned, with some
     // hysteresis.
     const uint16_t fxSelector = knob(5);
+    
     for (enum Effects fx = 0; fx < EFFECTS_COUNT; fx++) {
         if (fxSelector >= fx * (UINT16_MAX/EFFECTS_COUNT) &&
                 fxSelector <= (fx + 1) * (UINT16_MAX/EFFECTS_COUNT)) {

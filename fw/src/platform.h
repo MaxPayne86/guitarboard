@@ -22,6 +22,7 @@ typedef struct {
 void platformInit(const KnobConfig* knobConfig);
 void platformMainloop(void);
 void platformRegisterIdleCallback(void(*cb)(void));
+void platformRegisterUserCallback(void(*cb)(void));
 
 uint16_t knob(uint8_t n);
 bool button(uint8_t n);

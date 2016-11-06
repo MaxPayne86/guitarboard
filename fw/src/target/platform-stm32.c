@@ -109,12 +109,12 @@ static void ioInit(const KnobConfig* knobConfig)
 
 void platformFrameFinishedCB(void)
 {
-		static uint32_t sum[ADC_PINS];
+    static uint32_t sum[ADC_PINS];
 
     // Lowpass filter analog inputs
     for (unsigned i = 0; i < ADC_PINS; i++) {
-				sum[i] = ((((64u)-1) * sum[i])+((uint32_t)adcSamples[i]*(64u)))/(64u);
-				adcValues[i] = (uint16_t)(sum[i]/64u);
+        sum[i] = ((((64u)-1) * sum[i])+((uint32_t)adcSamples[i]*(64u)))/(64u);
+        adcValues[i] = (uint16_t)(sum[i]/64u);
     }
 }
 
@@ -164,15 +164,15 @@ void platformRegisterIdleCallback(void(*cb)(void))
 
 void platformRegisterUserCallback(void(*cb)(void))
 {
-		userCallback = cb;
+    userCallback = cb;
 }
 
 void clearAndHome(void)
 {
-  putchar(0x1b); // ESC
-  printf("[2J"); // clear screen
-  putchar(0x1b); // ESC
-  printf("[H"); // cursor to home
+    putchar(0x1b); // ESC
+    printf("[2J"); // clear screen
+    putchar(0x1b); // ESC
+    printf("[H"); // cursor to home
 }
 
 void platformMainloop(void)
@@ -182,21 +182,22 @@ void platformMainloop(void)
     setLed(LED_BLUE, false);
 
     unsigned lastprint = 0;
-		unsigned lastuser = 0;
-
+    unsigned lastuser = 0;
+    
     while (true) {
         __WFI();
 
-				if (samplecounter >= lastuser + USERTICK) // Every 250ms
-				{
-						if (userCallback) {
-								userCallback();
-						}
-						lastuser = samplecounter;
-				}
+        if (samplecounter >= lastuser + USERTICK) // Every 250ms
+        {  
+            if (userCallback) { // This if does not work
+                printf("Run!\n\r");
+                userCallback(); // This function call does not works
+            }
+            lastuser += USERTICK;
+        }
 
         if (samplecounter >= lastprint + CODEC_SAMPLERATE) { // Every second
-						clearAndHome();
+            //clearAndHome();
             printf("%u samples, peak %5d %5d. ADC %4d %4d %4d %4d %4d %4d\n\r",
                     samplecounter, peakIn, peakOut,
                     adcValues[0], adcValues[1],
@@ -208,6 +209,7 @@ void platformMainloop(void)
         }
 
         if (idleCallback) {
+            printf("Idle callback\n\r");
             idleCallback();
         }
     }

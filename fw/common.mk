@@ -33,10 +33,7 @@ $(BUILDDIR)/fft_tests.elf: $(COMMON_OBJS) $(BUILDDIR)/tests/fft_tests.o
 $(BUILDDIR)/fft_tests.elf: $(BUILDDIR)/kiss_fft130/kiss_fft.o
 $(BUILDDIR)/fft_tests.elf: $(BUILDDIR)/kiss_fft130/tools/kiss_fftr.o
 $(BUILDDIR)/compressor.elf: $(COMMON_OBJS) $(BUILDDIR)/compressor.o \
-	$(BUILDDIR)/dsp/vibrato.o $(BUILDDIR)/dsp/wahwah.o \
-	$(BUILDDIR)/dsp/delay.o $(BUILDDIR)/dsp/pitcher.o \
-	$(BUILDDIR)/dsp/biquad.o $(BUILDDIR)/dsp/1storder.o \
-	$(BUILDDIR)/dsp/dynamic.o
+	$(BUILDDIR)/dsp/basics.o $(BUILDDIR)/dsp/dynamic.o
 
 $(BUILDDIR)/%.elf: $(LIBOPENCM3) $(LDSCRIPT)
 	@echo LD $@

@@ -7,6 +7,11 @@ void platformInit(const KnobConfig* knobConfig)
     jackClientInit();
 }
 
+void platformRegisterUserCallback(void(*cb)(void))
+{
+    jackClientSetIdleCallback(cb); // To be fixed to run @ 250ms
+}
+
 void platformRegisterIdleCallback(void(*cb)(void))
 {
     jackClientSetIdleCallback(cb);
