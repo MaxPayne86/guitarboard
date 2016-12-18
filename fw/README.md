@@ -44,3 +44,8 @@ make
 make flash # Flash the default program onto the target using OpenOCD, or
 make dfu # Flash the default program onto the target over USB (short BOOT0 to VCC)
 ```
+
+Testing ST-Link V2
+openocd -f /usr/local/share/openocd/scripts/interface/stlink-v2.cfg -f /usr/local/share/openocd/scripts/target/stm32f1x.cfg
+
+

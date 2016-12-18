@@ -54,7 +54,7 @@ $(LIBOPENCM3):
 	touch $@
 
 .PHONY: flash
-flash: flash-fxbox
+flash: flash-compressor
 
 .PHONY: dfu
 dfu: dfu-compressor
