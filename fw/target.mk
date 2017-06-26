@@ -21,6 +21,7 @@ COMMONFLAGS += -std=c11 -O1 -fno-common -g -fconserve-stack
 #COMMONFLAGS += -funsafe-math-optimizations
 COMMONFLAGS += -Wall -Wextra -Werror-implicit-function-declaration -Werror -Wno-error=unused-variable
 COMMONFLAGS += -I$(LIBOPENCM3_DIR)/include/
+COMMONFLAGS += -u _printf_float
 
 # Sources to build for target only
 SRCS += src/target/platform-stm32.c

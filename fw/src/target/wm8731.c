@@ -14,7 +14,7 @@
 /// If WM8731_HIGHPASS is defined the codec is configured to remove
 /// DC bias automatically, otherwise it's done in software. The noise
 /// characteristics are different.
-//#define WM8731_HIGHPASS
+#define WM8731_HIGHPASS
 
 _Atomic unsigned samplecounter;
 _Atomic CodecIntSample peakIn = INT16_MIN;
@@ -53,7 +53,7 @@ static void codecConfig()
 {
     codecWriteReg(0x0f, 0b000000000); // Reset!
     codedSetInVolume(0);
-    codedSetOutVolume(-10);
+    codedSetOutVolume(0);
     codecWriteReg(0x04, 0b000010010); // Analog path - select DAC, no bypass
 #ifdef WM8731_HIGHPASS
     codecWriteReg(0x05, 0b000000000); // Digital path - disable soft mute

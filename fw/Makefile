@@ -9,10 +9,10 @@ clean:
 	$(MAKE) -f host.mk $@
 
 .PHONY: flash
-flash: flash-fxbox
+flash: flash-compressor
 
 .PHONY: dfu
-dfu: dfu-feedthrough
+dfu: dfu-compressor
 
 flash-%:
 	$(MAKE) -f target.mk $@

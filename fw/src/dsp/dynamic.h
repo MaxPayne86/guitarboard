@@ -12,4 +12,4 @@ typedef struct {
 } compressor_t;
 
 void dynamicProcess(const FloatAudioBuffer* restrict in, FloatAudioBuffer* restrict out,
-        compressor_t* c);
+        compressor_t* c, float *envout);

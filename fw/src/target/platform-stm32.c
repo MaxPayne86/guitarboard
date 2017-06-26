@@ -19,7 +19,8 @@
 #include "usb.h"
 
 #define ADC_PINS KNOB_COUNT
-#define USERTICK CODEC_SAMPLERATE/4u
+#define USERTICK CODEC_SAMPLERATE/4u // 250ms
+#define SWITCHTICK CODEC_SAMPLERATE/100u // 10ms
 
 // STM32F405RG pin map
 static const struct {
@@ -43,6 +44,10 @@ static const KnobConfig defaultKnobConfig[KNOB_COUNT] = {
         { .analog = true },
         { .analog = true },
 };
+ 
+static int32_t Pulses = 0;
+static float regulation_precision = 0.1; // decimal increment/decrement per encoder pulse used in processencoder
+uint8_t enc_freeze = 0x00; // Free run
 
 static const uint32_t ADC_DMA_STREAM = DMA_STREAM0;
 static const uint32_t ADC_DMA_CHANNEL = DMA_SxCR_CHSEL_0;
@@ -50,8 +55,9 @@ static const uint32_t ADC_DMA_CHANNEL = DMA_SxCR_CHSEL_0;
 static volatile uint16_t adcSamples[ADC_PINS]; // 12-bit value
 static volatile uint16_t adcValues[ADC_PINS]; // 16-bit value
 
-static void(*idleCallback)(void);
-static void(*userCallback)(void);
+static userFunction userCallback;
+static userFunction idleCallback;
+static userFunction switchCallback;
 
 static void adcInit(const KnobConfig* knobConfig)
 {
@@ -99,7 +105,7 @@ static void adcInit(const KnobConfig* knobConfig)
 static void ioInit(const KnobConfig* knobConfig)
 {
     for (size_t i = 0; i < KNOB_COUNT; i++) {
-        if (!knobConfig[i].analog) {
+        if (!knobConfig[i].analog) { // Configure the pin as input pullup only if it's not configured as analog input
             gpio_mode_setup(pins[i].port, GPIO_MODE_INPUT,
                     knobConfig[i].pullup ? GPIO_PUPD_PULLUP : GPIO_PUPD_NONE,
                             pins[i].pinno);
@@ -157,22 +163,101 @@ bool button(uint8_t n)
     return gpio_get(pins[n].port, pins[n].pinno);
 }
 
-void platformRegisterIdleCallback(void(*cb)(void))
+// Methods for get/set encoder's pulses value
+int32_t getPulses(void)
+{
+    return Pulses;
+}
+
+void setPulses(int32_t value)
+{
+    Pulses = value;
+}
+
+/**
+ * Set fine or rough regulation for processencoder function
+ * @param precision set decimal increment/decrement per encoder pulse
+ */       
+void set_regulation_precision(float precision)
+{
+  regulation_precision = precision;
+}
+
+/**
+ * Get regulation precision setting used with processencoder function
+ * @return regulation precision 
+ */       
+float get_regulation_precision(void)
+{
+  return regulation_precision;
+}
+
+/**
+ * This function transform pulses from encoder in user defined range values. 
+ * At startup Pulses = 0 since most common knob encoder types are relative, and
+ * this function returns zero/minval. Pulses can be initialized with setPulses() function. 
+ * @param minval
+ * @param maxval
+ * @return float - return a value between minval and maxval when user turn encoder knob
+ */
+float processencoder(float minval, float maxval)
+{
+  float tmp = 0.00;
+  
+  tmp = (Pulses*regulation_precision);
+  
+  if(tmp>maxval)
+  {
+    tmp = maxval;
+    enc_freeze = 0x01; // Stop counting positive
+  }
+  else if(tmp<minval)
+  {
+    tmp = minval;
+    enc_freeze = 0x10; // Stop counting negative
+  }
+  else
+  {
+    enc_freeze = 0x00; // Free run
+  }
+  
+  return tmp;
+}
+
+/**
+ * This function transform pulses from encoder in a selector which returns integer indexes 
+ * useful for mux switch operation or menu entries
+ * @param pulses - the actual pulses count see getPulses()
+ * @param bits - number of bits for selector: 2=1:4, 3=1:8, etc...
+ * @return uint16 - return a value between minval and maxval when user turn encoder knob
+ */
+uint16_t selectorwithencoder(int32_t pulses, uint8_t bits)
+{
+  uint16_t result = 1;
+  
+  if(pulses>16 && bits>0)
+  {
+    result = (pulses>>4)&0x0F;
+    if(result > (1<<bits))
+      result = (1<<bits);
+  }
+  
+  return result;  // Because we manage encoder in 4x resolution so every step on the encoder gives 4 increment 
+}
+
+void platformRegisterIdleCallback(userFunction cb)
 {
     idleCallback = cb;
 }
 
-void platformRegisterUserCallback(void(*cb)(void))
+void platformRegisterSwitchCallback(userFunction cb)
 {
-    userCallback = cb;
+    switchCallback = cb;
 }
 
-void clearAndHome(void)
+void platformRegisterUserCallback(userFunction cb)
 {
-    putchar(0x1b); // ESC
-    printf("[2J"); // clear screen
-    putchar(0x1b); // ESC
-    printf("[H"); // cursor to home
+    userCallback = cb;
 }
 
 void platformMainloop(void)
@@ -183,34 +268,42 @@ void platformMainloop(void)
 
     unsigned lastprint = 0;
     unsigned lastuser = 0;
+    unsigned lastswitch = 0;
     
     while (true) {
         __WFI();
 
+        if (idleCallback) {
+            idleCallback();
+        }
+        
+        if (samplecounter >= lastswitch + SWITCHTICK) // Every 10ms
+        {  
+            if (switchCallback) {
+                switchCallback();
+            }
+            lastswitch += SWITCHTICK;
+        }
+        
         if (samplecounter >= lastuser + USERTICK) // Every 250ms
         {  
-            if (userCallback) { // This if does not work
-                printf("Run!\n\r");
-                userCallback(); // This function call does not works
+            if (userCallback) {
+                userCallback();
             }
             lastuser += USERTICK;
         }
 
         if (samplecounter >= lastprint + CODEC_SAMPLERATE) { // Every second
-            //clearAndHome();
-            printf("%u samples, peak %5d %5d. ADC %4d %4d %4d %4d %4d %4d\n\r",
+            /*printf("%u samples, peak %5d %5d. ADC %4d %4d %4d %4d %4d %4d\n\r",
                     samplecounter, peakIn, peakOut,
                     adcValues[0], adcValues[1],
                     adcValues[2], adcValues[3],
-                    adcValues[4], adcValues[5]);
+                    adcValues[4], adcValues[5]);*/
 
-            peakIn = peakOut = INT16_MIN;
+            peakIn = peakOut = INT16_MIN; // Reset peak variables
             lastprint += CODEC_SAMPLERATE;
         }
 
-        if (idleCallback) {
-            printf("Idle callback\n\r");
-            idleCallback();
-        }
+        
     }
 }

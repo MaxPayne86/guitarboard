@@ -10,7 +10,7 @@
 
 
 void dynamicProcess(const FloatAudioBuffer* restrict in, FloatAudioBuffer* restrict out,
-        compressor_t* c)
+        compressor_t* c, float *envout)
 {
 	
 	float attTime = c->attack*1e-3; // From ms to sec
@@ -21,8 +21,8 @@ void dynamicProcess(const FloatAudioBuffer* restrict in, FloatAudioBuffer* restr
 	float noise_thr_dB = -40.0;
 	float noise_thr_l = DB_TO_LINEAR(noise_thr_dB);
 
-	float ga = exp(-1.0f/(sampleRate*attTime));
-	float gr = exp(-1.0f/(sampleRate*relTime));	
+	float ga = expf(-1.0f/(sampleRate*attTime));
+	float gr = expf(-1.0f/(sampleRate*relTime));	
 	
 	float envIn = 0.0f;
 	float envIn_r = 0.0f;
@@ -43,8 +43,8 @@ void dynamicProcess(const FloatAudioBuffer* restrict in, FloatAudioBuffer* restr
 		cmpcoeff = 1.0 - (1.0/ratio);
 	else
 		cmpcoeff = 0.0;
-		
-  for (unsigned s = 0; s < CODEC_SAMPLES_PER_FRAME; s++) {
+	
+    for (unsigned s = 0; s < CODEC_SAMPLES_PER_FRAME; s++) {
 
 		// Peak envelope detector
 		/*envIn_r = fabsf(in->s[s][0]);
@@ -52,10 +52,10 @@ void dynamicProcess(const FloatAudioBuffer* restrict in, FloatAudioBuffer* restr
 
 		envIn = fmaxf(envIn_r, envIn_l);
 
-    if( envOut < envIn )
-        envOut = envIn + ga * (envOut - envIn);
-    else
-        envOut = envIn + gr * (envOut - envIn);*/
+        if( envOut < envIn )
+            envOut = envIn + ga * (envOut - envIn);
+        else
+            envOut = envIn + gr * (envOut - envIn);*/
 
 		// Rms envelope detector
 		envIn_r = fabsf(in->s[s][0]);
@@ -65,9 +65,9 @@ void dynamicProcess(const FloatAudioBuffer* restrict in, FloatAudioBuffer* restr
 		envIn = envIn * envIn; 
 		
 		if( envOut < envIn )
-        envOut = envIn + ga * (envOut - envIn);
-    else
-        envOut = envIn + gr * (envOut - envIn);
+            envOut = envIn + ga * (envOut - envIn);
+        else
+            envOut = envIn + gr * (envOut - envIn);
 		 
 		envRms = sqrtf(envOut);
 		
@@ -77,7 +77,7 @@ void dynamicProcess(const FloatAudioBuffer* restrict in, FloatAudioBuffer* restr
 			env = noise_thr_l;
 
 		// Compressor calculations
-		cmpgain = pow((thr_l/env), cmpcoeff);
+		cmpgain = powf((thr_l/env), cmpcoeff);
 		if(cmpgain > 1.0f)
 			cmpgain = 1.0f;
 		
@@ -88,4 +88,5 @@ void dynamicProcess(const FloatAudioBuffer* restrict in, FloatAudioBuffer* restr
 		out->s[s][0] = out_r * postgain;
 		out->s[s][1] = out_l * postgain;
   }
+  *envout = env;
 }

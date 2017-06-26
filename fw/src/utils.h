@@ -6,6 +6,9 @@
 #define M_PI 3.14159265358979323846
 #endif
 
+#define ON 0x01
+#define OFF 0x00
+
 #define FULLRANGEVAL 4096.0f
 #define MIDDLEVAL (FULLRANGEVAL/2)
 
@@ -61,7 +64,7 @@ static inline float processpot(float minval, float maxval, uint16_t potval)
  * useful for mux switch operation or menu entries
  * @param potval - the actual adc value returned by analogRead(Ax)
  * @param bits - number of bits for selector: 2=1:4, 3=1:8, etc...
- * @return uint16 - return a value between minval and maxval when user turn encoder knob
+ * @return uint16 - return a value between 0 and X where X = 2^bits
  */
 static inline uint16_t selectorwithpot(uint16_t potval, uint8_t bits)
 {
@@ -92,7 +95,7 @@ static inline void samplesToFloat(const AudioBuffer* restrict in,
         FloatAudioBuffer* restrict out)
 {
     for (unsigned s = 0; s < 2 * CODEC_SAMPLES_PER_FRAME; s++) {
-        out->m[s] = in->m[s];
+        out->m[s] = in->m[s] / 32768.0f; // Scaling to have +/- 1.0
     }
 }
 
@@ -100,7 +103,7 @@ static inline void floatToSamples(const FloatAudioBuffer* restrict in,
         AudioBuffer* restrict out)
 {
     for (unsigned s = 0; s < 2 * CODEC_SAMPLES_PER_FRAME; s++) {
-        out->m[s] = in->m[s];
+        out->m[s] = in->m[s] * 32768.0f; // Scaling to have +/- 1.0
     }
 }
 
